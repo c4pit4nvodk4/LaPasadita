@@ -801,24 +801,30 @@ function printThermalReceipt() {
         <html>
         <head>
             <title>Imprimir Baucher</title>
-            <style>
-                body { font-family: 'Courier New', monospace; margin: 0; padding: 0; }
-                .receipt { width: 80mm; padding: 10px; font-size: 14px; line-height: 1.4; font-weight: bold; }
-                .receipt-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; }
-                .receipt-separator { border-top: 1px dashed #000; margin: 10px 0; }
-                .receipt-item, .receipt-total, .receipt-change {
-                    display: flex;
-                    justify-content: space-between;
-                }
-                .receipt-customer-title, .receipt-title {
-                    font-weight: bold;
-                }
-                .receipt-qr img, .receipt-flag img {
-                    display: block;
-                    margin: 0 auto;
-                    max-width: 100px;
-                }
-            </style>
+<style>
+    body { font-family: 'Courier New', monospace; margin: 0; padding: 0; }
+    .receipt {
+        width: 80mm;
+        padding: 10px;
+        font-size: 14px;
+        line-height: 1.4;
+        font-weight: bold; /* <-- ESTA LÍNEA NUEVA */
+    }
+    .receipt-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; }
+    .receipt-separator { border-top: 1px dashed #000; margin: 10px 0; }
+    .receipt-item, .receipt-total, .receipt-change {
+        display: flex;
+        justify-content: space-between;
+    }
+    .receipt-customer-title, .receipt-title {
+        font-weight: bold;
+    }
+    .receipt-qr img, .receipt-flag img {
+        display: block;
+        margin: 0 auto;
+        max-width: 100px;
+    }
+</style>
         </head>
         <body>
             <div class="receipt">${receipt.innerHTML}</div>
