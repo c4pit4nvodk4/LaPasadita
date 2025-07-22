@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <title>La Pasadita - Sistema de Comandas</title>
     <link href="https://c4pit4nvodk4.github.io/LaPasadita/ICON.png" rel="icon" />
     <style>
@@ -357,33 +357,6 @@
             font-size: 12px;
             color: #666;
         }
-	            /* Estilo para el recibo en PDF */
-        .pdf-receipt {
-            width: 80mm;
-            padding: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-	            /* Agregamos este estilo para el elemento oculto */
-        .hidden-receipt-container {
-            position: absolute;
-            left: -9999px;
-            top: -9999px;
-            width: 80mm;
-            visibility: hidden;
-        }
-	            /* Mantén todos tus estilos existentes aquí */
-        /* ... (tus estilos actuales) ... */
-        
-        /* Nuevo estilo para el botón de exportación */
-        .print-btn.excel {
-            background-color: #27ae60;
-        }
-        
-        .print-btn.excel:hover {
-            background-color: #219653;
-        }
     </style>
 </head>
 <body>
@@ -505,7 +478,7 @@
             
 <div class="print-section">
     <button class="print-btn" onclick="printThermalReceipt()">IMPRIMIR BAUCHEL</button>
-            <button class="print-btn excel" onclick="exportToExcel()">EXPORTAR EXCEL</button>
+    <button class="print-btn save" onclick="saveAsPDF()">GUARDAR BAUCHEL</button>
     <button class="print-btn" style="background-color:#2ecc71;" onclick="newCustomer()">NUEVO CLIENTE</button>
 </div>
         </div>
@@ -876,47 +849,23 @@ function printThermalReceipt() {
     printWindow.document.close();
 }
 
-// Guardar baucher como PDF (Dia_Mes_Año_Folio.pdf)
+// Guardar baucher como PDF (Mes-Día-Folio.pdf)
 function saveAsPDF() {
-    if (orderItems.length === 0) {
-        alert('No hay items en el pedido para guardar');
-        return;
-    }
-    
     const receiptElement = document.getElementById("receipt");
     const now = new Date();
-    
-    // Obtener día, mes y año formateados
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0'); // Enero es 0
-    const year = now.getFullYear();
-    
-    // Obtener el número de folio actual (sin el "N°")
-    const folio = document.getElementById("receipt-folio").textContent.replace('N°', '');
-    
-    // Crear el nombre del archivo en formato Dia_Mes_Año_Folio
-    const fileName = `${day}_${month}_${year}_${folio}.pdf`;
-    
-    // Configuración para html2pdf
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const folio = document.getElementById("receipt-folio").textContent.replace(/\D/g, '');
+    const fileName = `${month}-${day}-N°${folio}.pdf`;
+
     const opt = {
-        margin: 0,
-        filename: fileName,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            windowWidth: 80 * 3.78, // Convertir mm a px (1mm = 3.78px)
-            width: 80 * 3.78 // Ancho fijo de 80mm
-        },
-        jsPDF: { 
-            unit: 'mm', 
-            format: [80, 297], // 80mm de ancho, 297mm de alto
-            orientation: 'portrait' 
-        }
+        margin:       0,
+        filename:     fileName,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: [80, 297], orientation: 'portrait' }
     };
-    
-    // Generar el PDF
+
     html2pdf().set(opt).from(receiptElement).save();
 }
 // NUEVO CLIENTE: Limpia todo y aumenta el folio
@@ -946,226 +895,6 @@ function newCustomer() {
     // Limpiar recibo visual
     updateReceipt();
 }
-	            // Función corregida para guardar el PDF
-        function saveAsPDF() {
-            if (orderItems.length === 0) {
-                alert('No hay items en el pedido para guardar');
-                return;
-            }
-            
-            // Crear un contenedor oculto para el recibo
-            const hiddenContainer = document.createElement('div');
-            hiddenContainer.className = 'hidden-receipt-container';
-            document.body.appendChild(hiddenContainer);
-            
-            // Clonar el recibo actual con todos sus datos
-            const receiptClone = document.getElementById('receipt').cloneNode(true);
-            hiddenContainer.appendChild(receiptClone);
-            
-            // Aplicar estilos específicos para el PDF
-            receiptClone.style.width = '80mm';
-            receiptClone.style.padding = '10px';
-            receiptClone.style.fontFamily = "'Courier New', monospace";
-            receiptClone.style.fontSize = '14px';
-            receiptClone.style.lineHeight = '1.4';
-            receiptClone.style.boxSizing = 'border-box';
-            receiptClone.style.visibility = 'visible';
-            
-            // Obtener la fecha actual
-            const now = new Date();
-            const day = String(now.getDate()).padStart(2, '0');
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const year = now.getFullYear();
-            
-            // Obtener el número de folio
-            const folio = document.getElementById("receipt-folio").textContent.replace('N°', '');
-            
-            // Crear el nombre del archivo
-            const fileName = `${day}_${month}_${year}_${folio}.pdf`;
-            
-            // Configuración para html2pdf
-            const opt = {
-                margin: 0,
-                filename: fileName,
-                image: { 
-                    type: 'jpeg', 
-                    quality: 0.98 
-                },
-                html2canvas: { 
-                    scale: 2,
-                    useCORS: true,
-                    logging: true,
-                    windowWidth: 80 * 3.78, // Convertir mm a px (1mm = 3.78px)
-                    width: 80 * 3.78 // Ancho fijo de 80mm
-                },
-                jsPDF: { 
-                    unit: 'mm', 
-                    format: [80, 297], // 80mm de ancho, 297mm de alto
-                    orientation: 'portrait' 
-                }
-            };
-            
-            // Generar el PDF
-            html2pdf().set(opt).from(receiptClone).save().then(() => {
-                // Limpiar después de generar el PDF
-                document.body.removeChild(hiddenContainer);
-            });
-        }
-	            // Variables globales
-        let orderItems = [];
-        let folioNumber = 1;
-        let dailyResetDone = false;
-        
-        // Almacén de todas las órdenes del día
-        let dailyOrders = [];
-        
-        // Menú items (con los extras ya agregados)
-        const menuItems = {
-            burgers: [
-                // ... (tus hamburguesas) ...
-            ],
-            extras: [
-                // ... (tus extras incluyendo los nuevos) ...
-            ],
-            desserts: [
-                // ... (tus postres) ...
-            ],
-            ingredients: [
-                // ... (tus ingredientes) ...
-            ],
-            drinks: [
-                // ... (tus bebidas) ...
-            ]
-        };
-        
-        // ... (resto de tus funciones: initializeMenu, populateMenu, etc) ...
-        
-        // Modificamos la función de procesar pago para guardar la orden
-        function processPayment() {
-            const paymentAmount = parseFloat(document.getElementById('payment-amount').value) || 0;
-            const totalAmount = parseFloat(document.getElementById('receipt-total').textContent) || 0;
-            
-            if (paymentAmount >= totalAmount) {
-                const change = paymentAmount - totalAmount;
-                document.getElementById('receipt-change').textContent = change.toFixed(2);
-                
-                // Guardar la orden actual en el registro diario
-                saveCurrentOrder(totalAmount, paymentAmount, change);
-                
-                // Limpiar para el siguiente cliente
-                newCustomer();
-            } else {
-                alert('El monto recibido es menor al total del pedido');
-            }
-        }
-        
-        // Guardar la orden actual en el registro diario
-        function saveCurrentOrder(total, payment, change) {
-            const order = {
-                folio: document.getElementById('receipt-folio').textContent,
-                date: document.getElementById('receipt-date').textContent,
-                items: [...orderItems], // copia de los items
-                total: total,
-                payment: payment,
-                change: change,
-                customer: {
-                    name: document.getElementById('customer-name').value,
-                    address: document.getElementById('customer-address').textContent,
-                    phone: document.getElementById('customer-phone').value,
-                    notes: document.getElementById('customer-notes').value
-                }
-            };
-            
-            dailyOrders.push(order);
-            alert(`Orden ${order.folio} guardada!`);
-        }
-        
-        // Función para exportar a Excel (formato CSV)
-        function exportToExcel() {
-            if (dailyOrders.length === 0) {
-                alert('No hay órdenes para exportar');
-                return;
-            }
-            
-            // Crear contenido CSV
-            let csvContent = "Folio,Fecha,Productos,Cantidad,Precio Unitario,Total,Cliente,Dirección,Teléfono,Notas,Pago,Cambio\n";
-            
-            dailyOrders.forEach(order => {
-                // Para cada producto en la orden
-                order.items.forEach(item => {
-                    const row = [
-                        `"${order.folio}"`,
-                        `"${order.date}"`,
-                        `"${item.name}"`,
-                        item.quantity,
-                        item.price,
-                        item.total,
-                        `"${order.customer.name}"`,
-                        `"${order.customer.address}"`,
-                        `"${order.customer.phone}"`,
-                        `"${order.customer.notes}"`,
-                        order.payment,
-                        order.change
-                    ];
-                    
-                    csvContent += row.join(',') + '\n';
-                });
-                
-                // Línea para el total de la orden
-                const totalRow = [
-                    `"${order.folio}"`,
-                    `"${order.date}"`,
-                    '"TOTAL DE LA ORDEN"',
-                    '""',
-                    '""',
-                    order.total,
-                    '""',
-                    '""',
-                    '""',
-                    '""',
-                    order.payment,
-                    order.change
-                ];
-                
-                csvContent += totalRow.join(',') + '\n';
-            });
-            
-            // Crear y descargar el archivo
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            
-            // Nombre del archivo con fecha actual
-            const today = new Date();
-            const dateStr = `${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
-            
-            link.setAttribute("href", url);
-            link.setAttribute("download", `Ventas_La_Pasadita_${dateStr}.csv`);
-            link.style.visibility = 'hidden';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-        
-        // ... (resto de tus funciones) ...
-        
-        // Función para reiniciar al final del día
-        function checkDailyReset() {
-            const now = new Date();
-            const currentHour = now.getHours();
-            
-            if (currentHour === 0 && !dailyResetDone) {
-                // Es medianoche, reiniciar folio y limpiar órdenes
-                folioNumber = 1;
-                dailyResetDone = true;
-                dailyOrders = [];
-                updateFolio();
-            } else if (currentHour !== 0) {
-                dailyResetDone = false;
-            }
-        }
-	    
     </script>
 	
 </body>
