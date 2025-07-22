@@ -478,7 +478,6 @@
             
 <div class="print-section">
     <button class="print-btn" onclick="printThermalReceipt()">IMPRIMIR BAUCHEL</button>
-<button class="print-btn save" onclick="downloadExcel()">GUARDAR VENTAS DEL DÍA (EXCEL)</button>
     <button class="print-btn" style="background-color:#2ecc71;" onclick="newCustomer()">NUEVO CLIENTE</button>
 </div>
         </div>
@@ -494,7 +493,6 @@
         // Variables globales
         let orderItems = [];
         let folioNumber = 1;
-	    let salesLog = []; // <- Lista de ventas para guardar en Excel
         let dailyResetDone = false;
         
         // Menú items
@@ -869,16 +867,8 @@ function saveAsPDF() {
 
     html2pdf().set(opt).from(receiptElement).save();
 }
-	    
 // NUEVO CLIENTE: Limpia todo y aumenta el folio
 function newCustomer() {
-	// Registrar la venta en el historial
-const today = new Date().toLocaleDateString('es-MX');
-const folio = `N°${folioNumber.toString().padStart(6, '0')}`;
-const total = parseFloat(document.getElementById('receipt-total').textContent) || 0;
-salesLog.push({ dia: today, folio: folio, total: total.toFixed(2) });
-	
-
     // Aumentar folio
     folioNumber++;
     updateFolio();
@@ -905,32 +895,6 @@ salesLog.push({ dia: today, folio: folio, total: total.toFixed(2) });
     updateReceipt();
 }
     </script>
-	<!-- Agrega este CDN en tu <head> -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
-	// Descargar ventas del día en Excel
-function downloadExcel() {
-    if (salesLog.length === 0) {
-        alert("No hay ventas registradas hoy.");
-        return;
-    }
-
-    const worksheetData = [["Día", "Folio", "Total"]];
-    salesLog.forEach(entry => {
-        worksheetData.push([entry.dia, entry.folio, entry.total]);
-    });
-
-    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Ventas del Día");
-
-    const now = new Date();
-    const fileName = `Ventas_${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}.xlsx`;
-
-    XLSX.writeFile(workbook, fileName);
-}
-
-</script>
 	
-
 </body>
 </html>
