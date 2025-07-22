@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <title>La Pasadita - Sistema de Comandas</title>
-    <link href="https://c4pit4nvodk4.github.io/LaPasadita/ICON.png" rel="icon" />
+    <link href="/ICON.png" rel="icon" />
     <style>
         * {
             box-sizing: border-box;
@@ -364,6 +364,14 @@
             font-family: 'Courier New', monospace;
             font-size: 14px;
             line-height: 1.4;
+        }
+	            /* Agregamos este estilo para el elemento oculto */
+        .hidden-receipt-container {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            width: 80mm;
+            visibility: hidden;
         }
     </style>
 </head>
@@ -927,6 +935,71 @@ function newCustomer() {
     // Limpiar recibo visual
     updateReceipt();
 }
+	            // Función corregida para guardar el PDF
+        function saveAsPDF() {
+            if (orderItems.length === 0) {
+                alert('No hay items en el pedido para guardar');
+                return;
+            }
+            
+            // Crear un contenedor oculto para el recibo
+            const hiddenContainer = document.createElement('div');
+            hiddenContainer.className = 'hidden-receipt-container';
+            document.body.appendChild(hiddenContainer);
+            
+            // Clonar el recibo actual con todos sus datos
+            const receiptClone = document.getElementById('receipt').cloneNode(true);
+            hiddenContainer.appendChild(receiptClone);
+            
+            // Aplicar estilos específicos para el PDF
+            receiptClone.style.width = '80mm';
+            receiptClone.style.padding = '10px';
+            receiptClone.style.fontFamily = "'Courier New', monospace";
+            receiptClone.style.fontSize = '14px';
+            receiptClone.style.lineHeight = '1.4';
+            receiptClone.style.boxSizing = 'border-box';
+            receiptClone.style.visibility = 'visible';
+            
+            // Obtener la fecha actual
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            
+            // Obtener el número de folio
+            const folio = document.getElementById("receipt-folio").textContent.replace('N°', '');
+            
+            // Crear el nombre del archivo
+            const fileName = `${day}_${month}_${year}_${folio}.pdf`;
+            
+            // Configuración para html2pdf
+            const opt = {
+                margin: 0,
+                filename: fileName,
+                image: { 
+                    type: 'jpeg', 
+                    quality: 0.98 
+                },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    logging: true,
+                    windowWidth: 80 * 3.78, // Convertir mm a px (1mm = 3.78px)
+                    width: 80 * 3.78 // Ancho fijo de 80mm
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: [80, 297], // 80mm de ancho, 297mm de alto
+                    orientation: 'portrait' 
+                }
+            };
+            
+            // Generar el PDF
+            html2pdf().set(opt).from(receiptClone).save().then(() => {
+                // Limpiar después de generar el PDF
+                document.body.removeChild(hiddenContainer);
+            });
+        }
     </script>
 	
 </body>
