@@ -373,6 +373,17 @@
             width: 80mm;
             visibility: hidden;
         }
+	            /* Mantén todos tus estilos existentes aquí */
+        /* ... (tus estilos actuales) ... */
+        
+        /* Nuevo estilo para el botón de exportación */
+        .print-btn.excel {
+            background-color: #27ae60;
+        }
+        
+        .print-btn.excel:hover {
+            background-color: #219653;
+        }
     </style>
 </head>
 <body>
@@ -494,7 +505,7 @@
             
 <div class="print-section">
     <button class="print-btn" onclick="printThermalReceipt()">IMPRIMIR BAUCHEL</button>
-    <button class="print-btn save" onclick="saveAsPDF()">GUARDAR BAUCHEL</button>
+            <button class="print-btn excel" onclick="exportToExcel()">EXPORTAR EXCEL</button>
     <button class="print-btn" style="background-color:#2ecc71;" onclick="newCustomer()">NUEVO CLIENTE</button>
 </div>
         </div>
@@ -1000,6 +1011,161 @@ function newCustomer() {
                 document.body.removeChild(hiddenContainer);
             });
         }
+	            // Variables globales
+        let orderItems = [];
+        let folioNumber = 1;
+        let dailyResetDone = false;
+        
+        // Almacén de todas las órdenes del día
+        let dailyOrders = [];
+        
+        // Menú items (con los extras ya agregados)
+        const menuItems = {
+            burgers: [
+                // ... (tus hamburguesas) ...
+            ],
+            extras: [
+                // ... (tus extras incluyendo los nuevos) ...
+            ],
+            desserts: [
+                // ... (tus postres) ...
+            ],
+            ingredients: [
+                // ... (tus ingredientes) ...
+            ],
+            drinks: [
+                // ... (tus bebidas) ...
+            ]
+        };
+        
+        // ... (resto de tus funciones: initializeMenu, populateMenu, etc) ...
+        
+        // Modificamos la función de procesar pago para guardar la orden
+        function processPayment() {
+            const paymentAmount = parseFloat(document.getElementById('payment-amount').value) || 0;
+            const totalAmount = parseFloat(document.getElementById('receipt-total').textContent) || 0;
+            
+            if (paymentAmount >= totalAmount) {
+                const change = paymentAmount - totalAmount;
+                document.getElementById('receipt-change').textContent = change.toFixed(2);
+                
+                // Guardar la orden actual en el registro diario
+                saveCurrentOrder(totalAmount, paymentAmount, change);
+                
+                // Limpiar para el siguiente cliente
+                newCustomer();
+            } else {
+                alert('El monto recibido es menor al total del pedido');
+            }
+        }
+        
+        // Guardar la orden actual en el registro diario
+        function saveCurrentOrder(total, payment, change) {
+            const order = {
+                folio: document.getElementById('receipt-folio').textContent,
+                date: document.getElementById('receipt-date').textContent,
+                items: [...orderItems], // copia de los items
+                total: total,
+                payment: payment,
+                change: change,
+                customer: {
+                    name: document.getElementById('customer-name').value,
+                    address: document.getElementById('customer-address').textContent,
+                    phone: document.getElementById('customer-phone').value,
+                    notes: document.getElementById('customer-notes').value
+                }
+            };
+            
+            dailyOrders.push(order);
+            alert(`Orden ${order.folio} guardada!`);
+        }
+        
+        // Función para exportar a Excel (formato CSV)
+        function exportToExcel() {
+            if (dailyOrders.length === 0) {
+                alert('No hay órdenes para exportar');
+                return;
+            }
+            
+            // Crear contenido CSV
+            let csvContent = "Folio,Fecha,Productos,Cantidad,Precio Unitario,Total,Cliente,Dirección,Teléfono,Notas,Pago,Cambio\n";
+            
+            dailyOrders.forEach(order => {
+                // Para cada producto en la orden
+                order.items.forEach(item => {
+                    const row = [
+                        `"${order.folio}"`,
+                        `"${order.date}"`,
+                        `"${item.name}"`,
+                        item.quantity,
+                        item.price,
+                        item.total,
+                        `"${order.customer.name}"`,
+                        `"${order.customer.address}"`,
+                        `"${order.customer.phone}"`,
+                        `"${order.customer.notes}"`,
+                        order.payment,
+                        order.change
+                    ];
+                    
+                    csvContent += row.join(',') + '\n';
+                });
+                
+                // Línea para el total de la orden
+                const totalRow = [
+                    `"${order.folio}"`,
+                    `"${order.date}"`,
+                    '"TOTAL DE LA ORDEN"',
+                    '""',
+                    '""',
+                    order.total,
+                    '""',
+                    '""',
+                    '""',
+                    '""',
+                    order.payment,
+                    order.change
+                ];
+                
+                csvContent += totalRow.join(',') + '\n';
+            });
+            
+            // Crear y descargar el archivo
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            
+            // Nombre del archivo con fecha actual
+            const today = new Date();
+            const dateStr = `${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Ventas_La_Pasadita_${dateStr}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // ... (resto de tus funciones) ...
+        
+        // Función para reiniciar al final del día
+        function checkDailyReset() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            
+            if (currentHour === 0 && !dailyResetDone) {
+                // Es medianoche, reiniciar folio y limpiar órdenes
+                folioNumber = 1;
+                dailyResetDone = true;
+                dailyOrders = [];
+                updateFolio();
+            } else if (currentHour !== 0) {
+                dailyResetDone = false;
+            }
+        }
+	    
     </script>
 	
 </body>
