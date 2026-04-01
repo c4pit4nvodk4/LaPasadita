@@ -1,900 +1,1052 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <title>La Pasadita - Sistema de Comandas</title>
-    <link href="https://c4pit4nvodk4.github.io/LaPasadita/ICON.png" rel="icon" />
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-        
-        body {
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 10px;
-        }
-        
-        .container {
-            display: grid;
-            grid-template-columns: 75% 25%;
-            gap: 10px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .header {
-            grid-column: 1 / -1;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .logo {
-            max-width: 150px;
-            height: auto;
-            margin-bottom: 10px;
-        }
-        
-        .clock {
-            font-weight: bold;
-            font-size: 1.2em;
-            margin-bottom: 10px;
-        }
-        
-        .menu-section {
-            margin-bottom: 20px;
-        }
-        
-        .menu-title {
-            background-color: #333;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-        
-        @media (max-width: 1200px) {
-            .menu-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-        
-        @media (max-width: 900px) {
-            .menu-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        @media (max-width: 600px) {
-            .menu-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .menu-item {
-            background-color: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            text-align: center;
-            padding: 10px;
-            transition: transform 0.2s;
-        }
-        
-        .menu-item:hover {
-            transform: translateY(-5px);
-        }
-        
-        .menu-item img {
-            width: 100%;
-            height: auto;
-            aspect-ratio: 1/1;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-        
-        .item-name {
-            font-weight: bold;
-            margin: 8px 0;
-        }
-        
-        .item-price {
-            color: #e74c3c;
-            font-weight: bold;
-            margin: 5px 0;
-        }
-        
-        .quantity-controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 10px 0;
-        }
-        
-        .quantity-btn {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .quantity-btn:hover {
-            background-color: #2980b9;
-        }
-        
-        .quantity-display {
-            margin: 0 10px;
-            font-weight: bold;
-            min-width: 20px;
-            text-align: center;
-        }
-        
-        .sidebar {
-            background-color: white;
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .receipt {
-            width: 80mm;
-            margin: 0 auto;
-            padding: 10px;
-            background-color: white;
-            border: 1px dashed #ccc;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.4;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-        
-        .receipt-header {
-            text-align: center;
-            margin-bottom: 10px;
-            border-bottom: 1px dashed #000;
-            padding-bottom: 10px;
-        }
-        
-        .receipt-title {
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-        
-        .receipt-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-        }
-        
-        .receipt-total {
-            font-weight: bold;
-            border-top: 1px dashed #000;
-            padding-top: 10px;
-            margin-top: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .receipt-change {
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            margin-top: 5px;
-        }
-        
-        .receipt-separator {
-            border-top: 1px dashed #000;
-            margin: 10px 0;
-        }
-        
-        .receipt-customer {
-            margin-top: 15px;
-        }
-        
-        .receipt-customer-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .receipt-qr {
-            text-align: center;
-            margin-top: 15px;
-        }
-        
-        .receipt-qr img {
-            width: 100px;
-            height: auto;
-        }
-        
-        .receipt-flag {
-            text-align: center;
-            margin-top: 10px;
-        }
-        
-        .receipt-flag img {
-            width: 50px;
-            height: auto;
-        }
-        
-        .payment-section {
-            margin-top: 20px;
-        }
-        
-        .payment-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        
-        .payment-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 5px;
-        }
-        
-        .payment-btn {
-            padding: 10px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        
-        .payment-btn:hover {
-            background-color: #2980b9;
-        }
-        
-        .payment-input {
-            grid-column: span 3;
-            padding: 10px;
-            text-align: right;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        
-        .payment-submit {
-            grid-column: span 3;
-            padding: 10px;
-            background-color: #2ecc71;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        .payment-submit:hover {
-            background-color: #27ae60;
-        }
-        
-        .customer-section {
-            margin-top: 20px;
-        }
-        
-        .customer-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        
-        .customer-input {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 8px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        
-        .print-section {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .print-btn {
-            padding: 10px;
-            background-color: #e67e22;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        .print-btn:hover {
-            background-color: #d35400;
-        }
-        
-        .print-btn.save {
-            background-color: #3498db;
-        }
-        
-        .print-btn.save:hover {
-            background-color: #2980b9;
-        }
-        
-        .print-btn.multiple {
-            background-color: #9b59b6;
-        }
-        
-        .print-btn.multiple:hover {
-            background-color: #8e44ad;
-        }
-        
-        .footer {
-            grid-column: 1 / -1;
-            text-align: center;
-            margin-top: 30px;
-            padding: 20px;
-            font-size: 12px;
-            color: #666;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>La pasadita | Pedido móvil</title>
+  <meta name="theme-color" content="#c03232" />
+  <style>
+    :root{
+      --brand-red:#c03232;
+      --brand-yellow:#fecb4f;
+      --brand-dark:#7f1f1f;
+      --card:#fff8ec;
+      --text:#2c1a12;
+      --muted:#7a5d4b;
+      --ok:#1f8f3a;
+      --shadow:0 10px 25px rgba(0,0,0,.16);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:#fff2e0;
+      color:var(--text);
+    }
+    a{text-decoration:none}
+    img{max-width:100%;display:block}
+    button{font:inherit}
+    .app{
+      width:100%;
+      max-width:480px;
+      margin:0 auto;
+      min-height:100vh;
+      background:linear-gradient(180deg,#fff2e0 0%,#ffe6c1 100%);
+      position:relative;
+      padding-bottom:110px;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:60;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px 16px;
+      background:rgba(192,50,50,.95);
+      backdrop-filter:blur(10px);
+      color:var(--brand-yellow);
+      box-shadow:0 6px 18px rgba(0,0,0,.14);
+    }
+    .brand-mini{
+      font-weight:800;
+      letter-spacing:.3px;
+      font-size:1rem;
+    }
+    .cart-btn{
+      border:none;
+      background:var(--brand-yellow);
+      color:var(--brand-red);
+      width:52px;
+      height:52px;
+      border-radius:18px;
+      font-size:1.35rem;
+      position:relative;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+    }
+    .badge{
+      position:absolute;
+      top:-6px;
+      right:-4px;
+      min-width:22px;
+      height:22px;
+      border-radius:999px;
+      background:#fff;
+      color:var(--brand-red);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:.75rem;
+      font-weight:800;
+      padding:0 6px;
+      border:2px solid var(--brand-red);
+    }
+
+    .hero{
+      position:relative;
+      min-height:62vh;
+      overflow:hidden;
+      background:#2b0c0c;
+    }
+    .hero video{
+      width:100%;
+      height:62vh;
+      object-fit:cover;
+      opacity:.55;
+    }
+    .hero-overlay{
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.58));
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:24px;
+    }
+    .hero-logo{
+      width:min(250px,70vw);
+      margin-bottom:18px;
+      filter:drop-shadow(0 8px 18px rgba(0,0,0,.4));
+    }
+    .hero h1{
+      margin:0;
+      color:var(--brand-yellow);
+      font-size:2rem;
+      line-height:1.05;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+    }
+    .hero p{
+      margin:10px 0 0;
+      color:#fff7db;
+      font-size:.98rem;
+      max-width:330px;
+    }
+    .pill-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
+      margin-top:16px;
+    }
+    .pill{
+      background:rgba(254,203,79,.18);
+      border:1px solid rgba(254,203,79,.48);
+      color:#fff6d5;
+      padding:9px 12px;
+      border-radius:999px;
+      font-size:.84rem;
+      font-weight:700;
+      backdrop-filter:blur(4px);
+    }
+
+    .content{
+      padding:18px 14px 28px;
+    }
+    .section{
+      margin-top:22px;
+    }
+    .section-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin:0 0 12px;
+      color:var(--brand-red);
+      font-size:1.15rem;
+      font-weight:900;
+    }
+    .section-subtitle{
+      margin:-4px 0 14px;
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:14px;
+    }
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(192,50,50,.08);
+    }
+    .card-media{
+      aspect-ratio: 16 / 11;
+      overflow:hidden;
+      background:#f3d6bb;
+    }
+    .card-media img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+    .card-body{
+      padding:14px;
+    }
+    .card-title-row{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:6px;
+    }
+    .card h3{
+      margin:0;
+      font-size:.98rem;
+      color:var(--brand-red);
+      line-height:1.15;
+    }
+    .price{
+      white-space:nowrap;
+      font-weight:900;
+      color:var(--brand-dark);
+      font-size:.98rem;
+    }
+    .desc{
+      margin:8px 0 12px;
+      color:var(--muted);
+      font-size:.82rem;
+      line-height:1.32;
+    }
+    .actions{
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      align-items:stretch;
+      gap:10px;
+    }
+    .qty{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background:#fff;
+      border-radius:999px;
+      padding:6px;
+      border:1px solid #eed2b6;
+    }
+    .qty button{
+      width:34px;
+      height:34px;
+      border:none;
+      border-radius:50%;
+      background:var(--brand-red);
+      color:var(--brand-yellow);
+      font-weight:900;
+      cursor:pointer;
+    }
+    .qty span{
+      min-width:20px;
+      text-align:center;
+      font-weight:800;
+    }
+    .add-btn{
+      border:none;
+      background:var(--brand-yellow);
+      color:var(--brand-red);
+      font-weight:900;
+      border-radius:999px;
+      padding:12px 16px;
+      cursor:pointer;
+      box-shadow:0 8px 16px rgba(254,203,79,.35);
+      width:100%;
+    }
+
+    .shipping-box, .info-box{
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:15px;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(192,50,50,.08);
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-bottom:12px;
+    }
+    .field label{
+      font-size:.9rem;
+      font-weight:800;
+      color:var(--brand-red);
+    }
+    .field input, .field textarea, .field select{
+      width:100%;
+      border:1px solid #dfc4a9;
+      border-radius:14px;
+      padding:13px 14px;
+      background:#fff;
+      color:var(--text);
+      font:inherit;
+      outline:none;
+    }
+    .field textarea{
+      resize:vertical;
+      min-height:88px;
+    }
+
+    .shipping-list{
+      display:grid;
+      gap:10px;
+      margin-top:8px;
+    }
+    .ship-option{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      border:1px solid #ebceb0;
+      background:#fff;
+      border-radius:16px;
+      padding:10px;
+    }
+    .ship-option img{
+      width:52px;
+      height:52px;
+      object-fit:cover;
+      border-radius:12px;
+      flex-shrink:0;
+      background:#f3d6bb;
+    }
+    .ship-option-main{
+      flex:1;
+    }
+    .ship-option-name{
+      font-weight:900;
+      color:var(--brand-red);
+      font-size:.94rem;
+    }
+    .ship-option-price{
+      color:var(--brand-dark);
+      font-weight:800;
+      font-size:.92rem;
+    }
+    .ship-option input{
+      width:19px;
+      height:19px;
+      accent-color:var(--brand-red);
+    }
+
+    .social{
+      display:flex;
+      justify-content:center;
+      margin-top:18px;
+    }
+    .social a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      width:100%;
+      background:var(--brand-red);
+      color:var(--brand-yellow);
+      padding:14px 18px;
+      border-radius:16px;
+      font-weight:900;
+      box-shadow:var(--shadow);
+    }
+
+    .cart-sheet{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.48);
+      z-index:90;
+      opacity:0;
+      visibility:hidden;
+      transition:.25s ease;
+    }
+    .cart-sheet.open{
+      opacity:1;
+      visibility:visible;
+    }
+    .cart-panel{
+      position:absolute;
+      right:0;
+      bottom:0;
+      width:min(100%,480px);
+      height:86vh;
+      background:#fff8ec;
+      border-radius:24px 24px 0 0;
+      box-shadow:0 -12px 28px rgba(0,0,0,.24);
+      transform:translateY(100%);
+      transition:.28s ease;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+    .cart-sheet.open .cart-panel{
+      transform:translateY(0);
+    }
+    .cart-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:16px;
+      background:var(--brand-red);
+      color:var(--brand-yellow);
+    }
+    .cart-head h2{
+      margin:0;
+      font-size:1.08rem;
+    }
+    .close-btn{
+      border:none;
+      background:rgba(255,255,255,.16);
+      color:#fff7da;
+      border-radius:12px;
+      width:40px;
+      height:40px;
+      font-size:1.1rem;
+      cursor:pointer;
+    }
+    .cart-body{
+      flex:1;
+      overflow:auto;
+      padding:14px;
+    }
+    .cart-item{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      background:#fff;
+      border:1px solid #efd3b8;
+      border-radius:18px;
+      padding:12px;
+      margin-bottom:10px;
+    }
+    .cart-item-name{
+      font-weight:900;
+      color:var(--brand-red);
+      margin-bottom:5px;
+    }
+    .cart-item-meta{
+      color:var(--muted);
+      font-size:.9rem;
+      line-height:1.35;
+    }
+    .cart-item-right{
+      text-align:right;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .cart-item-price{
+      font-weight:900;
+      color:var(--brand-dark);
+    }
+    .mini-remove{
+      border:none;
+      background:#ffe0e0;
+      color:var(--brand-red);
+      border-radius:10px;
+      padding:8px 10px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .cart-footer{
+      padding:14px;
+      background:#fff3dd;
+      border-top:1px solid #edd0b3;
+    }
+    .totals{
+      background:#fff;
+      border-radius:18px;
+      padding:12px;
+      border:1px solid #ebcfb4;
+      margin-bottom:12px;
+    }
+    .total-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin:6px 0;
+      font-size:.96rem;
+    }
+    .total-row strong{
+      color:var(--brand-red);
+    }
+    .grand{
+      font-size:1.08rem;
+      font-weight:900;
+      color:var(--brand-red);
+      padding-top:6px;
+      border-top:1px dashed #e5c2a2;
+      margin-top:8px;
+    }
+    .checkout-btn{
+      width:100%;
+      border:none;
+      background:#1ebc56;
+      color:#fff;
+      padding:16px 18px;
+      border-radius:18px;
+      font-weight:900;
+      font-size:1rem;
+      cursor:pointer;
+      box-shadow:0 10px 22px rgba(30,188,86,.26);
+    }
+    .empty{
+      text-align:center;
+      color:var(--muted);
+      padding:40px 18px;
+    }
+
+    .floating-cart{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform:translateX(-50%);
+      width:min(calc(100% - 24px),456px);
+      z-index:70;
+    }
+    .floating-cart button{
+      width:100%;
+      border:none;
+      background:var(--brand-red);
+      color:var(--brand-yellow);
+      border-radius:18px;
+      padding:16px 18px;
+      font-weight:900;
+      font-size:1rem;
+      box-shadow:0 12px 24px rgba(192,50,50,.28);
+      cursor:pointer;
+    }
+
+    .note{
+      font-size:.85rem;
+      color:var(--muted);
+      line-height:1.4;
+      margin-top:10px;
+    }
+    .warning{
+      color:var(--brand-red);
+      font-weight:800;
+    }
+
+    @media (max-width:360px){
+      .cards{
+        gap:10px;
+      }
+      .card-body{
+        padding:10px;
+      }
+      .qty{
+        gap:6px;
+      }
+      .qty button{
+        width:30px;
+        height:30px;
+      }
+      .add-btn{
+        padding:10px 12px;
+        font-size:.9rem;
+      }
+    }
+
+    @media (min-width:481px){
+      body{
+        background:linear-gradient(90deg,#f3d7bf 0%,#fff2e0 12%,#fff2e0 88%,#f3d7bf 100%);
+      }
+      .app{
+        box-shadow:0 0 0 1px rgba(0,0,0,.05), 0 18px 48px rgba(0,0,0,.12);
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <img src="https://c4pit4nvodk4.github.io/LaPasadita/Imagenes/LOGO.png" alt="La Pasadita" class="logo">
-            <div class="clock" id="clock">Cargando fecha y hora...</div>
-            <h1>Sistema de Comandas</h1>
-			
+  <div class="app">
+    <header class="topbar">
+      <div class="brand-mini">La pasadita</div>
+      <button class="cart-btn" id="openCartTop" aria-label="Abrir carrito">
+        🛒
+        <span class="badge" id="cartBadge">0</span>
+      </button>
+    </header>
+
+    <section class="hero">
+      <video autoplay muted loop playsinline>
+        <source src="VIDEOS/Portada.webm" type="video/webm" />
+        Tu navegador no soporta video HTML5.
+      </video>
+      <div class="hero-overlay">
+        <img src="IMAGENES/LaPasadita.png" alt="Logo La pasadita" class="hero-logo" />
+        <h1>Haz tu pedido</h1>
+        <p>Una experiencia pensada para smartphone, rápida, visual y lista para enviar por WhatsApp.</p>
+        <div class="pill-row">
+          <div class="pill">Horario: 6:00 PM a 11:30 PM</div>
+          <div class="pill">Pedidos al instante</div>
+          <div class="pill">Pago por WhatsApp</div>
         </div>
-        
-        <div class="main-content">
-            <div class="menu-section">
-                <div class="menu-title">Menú</div>
-                <div class="menu-grid" id="burgers-menu">
-                    <!-- Hamburguesas se llenarán con JavaScript -->
-                </div>
-            </div>
-            
-            <div class="menu-section">
-                <div class="menu-title">Extras</div>
-                <div class="menu-grid" id="extras-menu">
-                    <!-- Extras se llenarán con JavaScript -->
-                </div>
-            </div>
-            
-            <div class="menu-section">
-                <div class="menu-title">Menú de Postres</div>
-                <div class="menu-grid" id="desserts-menu">
-                    <!-- Postres se llenarán con JavaScript -->
-                </div>
-            </div>
-            
-            <div class="menu-section">
-                <div class="menu-title">Ingredientes Extras</div>
-                <div class="menu-grid" id="ingredients-menu">
-                    <!-- Ingredientes se llenarán con JavaScript -->
-                </div>
-            </div>
-            
-            <div class="menu-section">
-                <div class="menu-title">Menú de Gaseosas</div>
-                <div class="menu-grid" id="drinks-menu">
-                    <!-- Bebidas se llenarán con JavaScript -->
-                </div>
-            </div>
+      </div>
+    </section>
+
+    <main class="content">
+      <section class="info-box">
+        <div class="section-title">Bienvenido a La pasadita</div>
+        <div class="section-subtitle">Selecciona tus productos, agrega envío y revisa tu carrito antes de enviar el pedido.</div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">Datos de envío</h2>
+        <div class="shipping-box">
+          <div class="field">
+            <label for="customerName">Nombre del cliente</label>
+            <input id="customerName" type="text" placeholder="Escribe tu nombre" />
+          </div>
+
+          <div class="field">
+            <label for="customerAddress">Dirección de envío</label>
+            <textarea id="customerAddress" placeholder="Escribe calle, número y referencias"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="customerNeighborhood">Colonia</label>
+            <input id="customerNeighborhood" type="text" placeholder="Escribe tu colonia" />
+          </div>
+
+          <div class="field">
+            <label>Zonas de envío</label>
+            <div class="shipping-list" id="shippingOptions"></div>
+          </div>
+
+          <div class="note">
+            Verifica tus datos antes de enviar el pedido. El costo de envío se suma al total final.
+          </div>
         </div>
-        
-        <div class="sidebar">
-            <div class="receipt" id="receipt">
-                <div class="receipt-header">
-                    <div class="receipt-title">LA PASADITA</div>
-                    <div id="receipt-date">-</div>
-                    <div>Folio: <span id="receipt-folio">N°000001</span></div>
-                </div>
-                <div class="receipt-separator"></div>
-                <div class="receipt-title">PEDIDO</div>
-                <div id="receipt-items">
-                    <!-- Los items del pedido aparecerán aquí -->
-                    <div class="receipt-item empty">No hay items en el pedido</div>
-                </div>
-                <div class="receipt-separator"></div>
-                <div class="receipt-total">
-                    <span>TOTAL:</span>
-                    <span>$<span id="receipt-total">0.00</span></span>
-                </div>
-                <div class="receipt-change">
-                    <span>CAMBIO:</span>
-                    <span>$<span id="receipt-change">0.00</span></span>
-                </div>
-                <div class="receipt-separator"></div>
-                <div class="receipt-customer">
-                    <div class="receipt-customer-title">DATOS DEL CLIENTE</div>
-                    <div id="customer-address">-</div>
-                    <div id="customer-name-phone">-</div>
-                    <div id="customer-extra">-</div>
-                </div>
-				<div class="receipt-separator"></div>
-					<div>Escanea el QR para ver Nuestro Menu</div>
-                <div class="receipt-qr">
-                    <img src="https://c4pit4nvodk4.github.io/LaPasadita/QR/QR.svg" alt="QR Menu">
-                    <div>Gracias por comprar en La Pasadita</div>
-			<div>Siguenos en Nuestras Redes Sociales!</div>
-                </div>
-                <div class="receipt-flag">
-                    <img src="https://c4pit4nvodk4.github.io/LaPasadita/Imagenes/BANDERA.png" alt="Bandera de México">
-                </div>
-            </div>
-            
-            <div class="payment-section">
-                <div class="payment-title">MÉTODO DE PAGO</div>
-                <div class="payment-grid">
-                    <input type="text" class="payment-input" id="payment-amount" placeholder="Monto recibido">
-                    <button class="payment-btn" onclick="addToPayment(1)">1</button>
-                    <button class="payment-btn" onclick="addToPayment(2)">2</button>
-                    <button class="payment-btn" onclick="addToPayment(3)">3</button>
-                    <button class="payment-btn" onclick="addToPayment(4)">4</button>
-                    <button class="payment-btn" onclick="addToPayment(5)">5</button>
-                    <button class="payment-btn" onclick="addToPayment(6)">6</button>
-                    <button class="payment-btn" onclick="addToPayment(7)">7</button>
-                    <button class="payment-btn" onclick="addToPayment(8)">8</button>
-                    <button class="payment-btn" onclick="addToPayment(9)">9</button>
-                    <button class="payment-btn" onclick="addToPayment('.')">.</button>
-                    <button class="payment-btn" onclick="addToPayment(0)">0</button>
-                    <button class="payment-btn" onclick="clearPayment()">C</button>
-                    <button class="payment-submit" onclick="processPayment()">ENVIAR</button>
-                </div>
-            </div>
-            
-            <div class="customer-section">
-                <div class="customer-title">DATOS DEL CLIENTE</div>
-                <input type="text" class="customer-input" id="customer-name" placeholder="Nombre del Cliente" oninput="updateCustomerInfo()">
-                <input type="text" class="customer-input" id="address-line1" placeholder="Dirección 1" oninput="updateCustomerInfo()">
-                <input type="text" class="customer-input" id="address-number" placeholder="Número" oninput="updateCustomerInfo()">
-                <input type="text" class="customer-input" id="address-line2" placeholder="Dirección 2" oninput="updateCustomerInfo()">
-                <input type="text" class="customer-input" id="customer-phone" placeholder="Teléfono" oninput="updateCustomerInfo()">
-                <input type="text" class="customer-input" id="customer-notes" placeholder="Dato Extra" oninput="updateCustomerInfo()">
-            </div>
-            
-<div class="print-section">
-    <button class="print-btn" onclick="printThermalReceipt()">IMPRIMIR BAUCHEL</button>
-    <button class="print-btn" style="background-color:#2ecc71;" onclick="newCustomer()">NUEVO CLIENTE</button>
-</div>
+      </section>
+
+      <section class="section" id="menuSection"></section>
+
+      <section class="section">
+        <div class="social">
+          <a href="https://www.facebook.com/profile.php?id=61562771412832" target="_blank" rel="noopener noreferrer">
+            Síguenos en Facebook
+          </a>
         </div>
-        
-        <div class="footer">
-            Creado Por Capitan Vodka Y Mafer Rlen.
+      </section>
+    </main>
+  </div>
+
+  <div class="floating-cart">
+    <button id="openCartBottom">Ver carrito y total</button>
+  </div>
+
+  <div class="cart-sheet" id="cartSheet" aria-hidden="true">
+    <div class="cart-panel">
+      <div class="cart-head">
+        <h2>Tu pedido</h2>
+        <button class="close-btn" id="closeCart" aria-label="Cerrar carrito">✕</button>
+      </div>
+      <div class="cart-body" id="cartItems"></div>
+      <div class="cart-footer">
+        <div class="totals">
+          <div class="total-row"><span>Subtotal productos</span><strong id="subtotalText">$0</strong></div>
+          <div class="total-row"><span>Envío</span><strong id="shippingText">$0</strong></div>
+          <div class="total-row grand"><span>Total</span><strong id="totalText">$0</strong></div>
         </div>
+        <button class="checkout-btn" id="checkoutBtn">Proceder con el Pago</button>
+        <div class="note">
+          El botón enviará tu pedido al WhatsApp <span class="warning">+56 9 8260 0659</span> con el detalle completo de compra.
+        </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-	
-		
-        // Variables globales
-        let orderItems = [];
-        let folioNumber = 1;
-        let dailyResetDone = false;
-        
-        // Menú items
-        const menuItems = {
-            burgers: [
-                { name: "Habanero Burger", price: 80, image: "HAMBURGUESAS/HABANERO.PNG" },
-                { name: "Club Sandwish de pollo", price: 65, image: "HAMBURGUESAS/CLUB.PNG" },
-                { name: "Papas con boneless", price: 75, image: "HAMBURGUESAS/PAPASBONELESS.PNG" },
-                { name: "Nuggets de Pollo", price: 60, image: "HAMBURGUESAS/NUGGETS.PNG" },
-                { name: "Western Especial", price: 110, image: "HAMBURGUESAS/WESTERN.PNG" },
-                { name: "Buffalo Burger", price: 90, image: "HAMBURGUESAS/BUFFALO.PNG" },
-                { name: "La tradicional", price: 70, image: "HAMBURGUESAS/TRADICIONAL.PNG" },
-                { name: "Guacamole Burger", price: 120, image: "HAMBURGUESAS/GUACAMOLE.PNG" }
-            ],
-extras: [
-    { name: "Carne Tradicional", price: 25, image: "EXTRAS/CARNETRADICIONAL.PNG" },
-    { name: "Carne Western", price: 35, image: "EXTRAS/CARNEWESTERN.PNG" },
-    { name: "Tocino", price: 20, image: "EXTRAS/TOCINO.PNG" },
-    { name: "Aros De Cebolla", price: 15, image: "EXTRAS/AROS.PNG" },
-    { name: "Chiles en Vinagre", price: 5, image: "EXTRAS/CHILES.PNG" },
-    // Nuevos extras
-    { name: "Papas Extras", price: 40, image: "EXTRAS/PAPASEXTRAS.png" },
-    { name: "Salsa Extra", price: 10, image: "EXTRAS/SALSAEXTRA.png" },
-    { name: "Las Aguilas", price: 10, image: "EXTRAS/DELIVERYAGUILAS.png" },
-    { name: "Colinas RIN del parque Margaritas", price: 20, image: "EXTRAS/DELIVERYCOLINAS.png" },
-    { name: "El Elejido", price: 20, image: "EXTRAS/DELIVERYELEJIDO.png" },
-    { name: "Las Fabricas", price: 20, image: "EXTRAS/DELIVERYFABRICAS.png" },
-    { name: "La Coauhila Tamaulipas Evolucion", price: 25, image: "EXTRAS/DELIVERYCOAUHILA.png" }
-],
-            desserts: [
-                { name: "Crepa Fresita", price: 50, image: "POSTRES/FRESITA.PNG" },
-                { name: "Crepa Chocofresa", price: 50, image: "POSTRES/CHOCOFRESA.PNG" },
-                { name: "Crepa Chocoplatano", price: 50, image: "POSTRES/CHOCOPLATANO.PNG" },
-                { name: "Crepa Frutal", price: 60, image: "POSTRES/FRUTAL.PNG" }
-            ],
-            ingredients: [
-                { name: "Nutella", price: 10, image: "INGREDIENTES/NUTELLA.PNG" },
-                { name: "Fresa", price: 10, image: "INGREDIENTES/FRESA.PNG" },
-                { name: "Platano", price: 10, image: "INGREDIENTES/PLATANO.PNG" },
-                { name: "Hershey Liquido", price: 10, image: "INGREDIENTES/HERSHEY.PNG" },
-                { name: "mermelada de fresa", price: 10, image: "INGREDIENTES/MERMELADA.PNG" }
-            ],
-            drinks: [
-                { name: "Cocacola Normal Lata 220Ml", price: 30, image: "GASEOSAS/COCACOLA.PNG" },
-                { name: "Cocacola Zero Lata 220Ml", price: 30, image: "GASEOSAS/COCAZERO.PNG" },
-                { name: "Sprite Lata 220Ml", price: 30, image: "GASEOSAS/SPRITE.PNG" },
-                { name: "Fanta Lata 220Ml", price: 30, image: "GASEOSAS/FANTA.PNG" },
-                { name: "Cocacola Normal Botella 1 Litro", price: 100, image: "GASEOSAS/COCA1L.PNG" },
-                { name: "Cocacola Zero Botella 1 Litro", price: 100, image: "GASEOSAS/COCAZERO1L.PNG" },
-                { name: "Sprite Botella 1 Litro", price: 100, image: "GASEOSAS/SPRITE1L.PNG" },
-                { name: "Fanta Botella 1 Litro", price: 100, image: "GASEOSAS/FANTA1L.PNG" }
-            ]
-        };
-        
-        // Inicializar la aplicación
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeMenu();
-            updateClock();
-            setInterval(updateClock, 1000);
-            checkDailyReset();
-        });
-        
-        // Inicializar los menús
-        function initializeMenu() {
-            populateMenu('burgers-menu', menuItems.burgers);
-            populateMenu('extras-menu', menuItems.extras);
-            populateMenu('desserts-menu', menuItems.desserts);
-            populateMenu('ingredients-menu', menuItems.ingredients);
-            populateMenu('drinks-menu', menuItems.drinks);
-        }
-        
-        // Llenar un menú con items
-        function populateMenu(menuId, items) {
-            const menu = document.getElementById(menuId);
-            menu.innerHTML = '';
-            
-            items.forEach(item => {
-                const menuItem = document.createElement('div');
-                menuItem.className = 'menu-item';
-                menuItem.innerHTML = `
-                    <img src="https://c4pit4nvodk4.github.io/LaPasadita/Imagenes/${item.image}" alt="${item.name}">
-                    <div class="item-name">${item.name}</div>
-                    <div class="quantity-controls">
-                        <button class="quantity-btn" onclick="decrementItem('${item.name}', ${item.price})">-</button>
-                        <div class="quantity-display" id="qty-${item.name.replace(/\s+/g, '-')}">0</div>
-                        <button class="quantity-btn" onclick="incrementItem('${item.name}', ${item.price})">+</button>
+  <script>
+    const phoneNumber = '56982600659';
+
+    const menuData = [
+      {
+        category: 'Hamburguesas y Especialidades',
+        items: [
+          {
+            id: 'westtern-especial',
+            name: 'Westtern Especial',
+            price: 120,
+            image: 'MENU/imagenes/Westtern.PNG',
+            description: '150 gramos de carne, tiras de tocino, aros de cebolla, jamón y queso, acompañadas de papas sazonadas.'
+          },
+          {
+            id: 'guacamole',
+            name: 'Guacamole',
+            price: 120,
+            image: 'MENU/imagenes/Guacanole.PNG',
+            description: '150 gramos de carne sirlon, tiras de tocino, lechuga fresca, tomate, cebolla y delicioso aguacate en trocitos.'
+          },
+          {
+            id: 'buffalo',
+            name: 'Buffalo',
+            price: 100,
+            image: 'MENU/imagenes/Buffalo.PNG',
+            description: '115 gramos de carne, boneless salseados en buffalo, jamón y queso. Acompañada de papas sazonadas.'
+          },
+          {
+            id: 'habanero',
+            name: 'Habanero',
+            price: 90,
+            image: 'MENU/imagenes/Habanero.PNG',
+            description: '150 gramos de carne, queso manchego, deliciosos trozos de chorizo parrillero aderezado con salsa habanero, receta de la casa. Acompañada de papas sazonadas.'
+          },
+          {
+            id: 'tradicional',
+            name: 'Tradicional',
+            price: 75,
+            image: 'MENU/imagenes/Tradicional.PNG',
+            description: '115 gramos de carne, lechuga fresca, tomate, cebolla, jamón y queso. Acompañada de papas sazonadas.'
+          },
+          {
+            id: 'sandwich',
+            name: 'Sandwich',
+            price: 70,
+            image: 'MENU/imagenes/Sandwish.PNG',
+            description: 'Deliciosa pechuga crujiente de pollo bañada con aderezo ranch, mayonesa y un toque de mostaza, lechuga y tomate en pan artesanal multigrano.'
+          },
+          {
+            id: 'papas-con-boneless',
+            name: 'Papas con Boneless',
+            price: 75,
+            image: 'MENU/imagenes/PapasConBonelless.PNG',
+            description: 'Papas sazonadas acompañadas de boneless y 2 salsas de queso.'
+          }
+        ]
+      },
+      {
+        category: 'Extras',
+        items: [
+          {
+            id: 'orden-papas',
+            name: 'Orden de papas',
+            price: 45,
+            image: 'MENU/imagenes/Papas.PNG',
+            description: 'Papas sazonadas y 1 salsa de queso.'
+          }
+        ]
+      },
+      {
+        category: 'Refrescos',
+        items: [
+          { id: 'pepsi-400', name: 'Pepsi 400Ml', price: 15, image: 'MENU/imagenes/Pepsi.PNG', description: 'Refresco de 400 ml.' },
+          { id: '7up-400', name: '7Up 400Ml', price: 15, image: 'MENU/imagenes/7up.PNG', description: 'Refresco de 400 ml.' },
+          { id: 'mirinda-400', name: 'Miranda 400Ml', price: 15, image: 'MENU/imagenes/Miranda.PNG', description: 'Refresco de 400 ml.' },
+          { id: 'manzanita-400', name: 'Manzanita 400Ml', price: 15, image: 'MENU/imagenes/Manzanita.PNG', description: 'Refresco de 400 ml.' },
+          { id: 'squirt-400', name: 'Squirt 400Ml', price: 15, image: 'MENU/imagenes/Squirt.PNG', description: 'Refresco de 400 ml.' }
+        ]
+      },
+      {
+        category: 'Promoción especial',
+        items: [
+          {
+            id: 'promo-4-hamburguesas',
+            name: 'Promo 4 hamburguesas',
+            price: 200,
+            image: 'MENU/imagenes/Pomo4.PNG',
+            description: 'Hamburguesa con jamón, queso y aderezos.'
+          }
+        ]
+      },
+      {
+        category: 'Agrega a tu pedido',
+        items: [
+          { id: 'extra-carne-115', name: '1 Carne Extra 115Gr', price: 25, image: 'MENU/imagenes/Extra115g.PNG', description: 'Extra para complementar tu pedido.' },
+          { id: 'extra-carne-150', name: '1 Carne extra 150Gr', price: 35, image: 'MENU/imagenes/Extra150g.PNG', description: 'Extra para complementar tu pedido.' },
+          { id: 'tocino', name: 'Tocino', price: 20, image: 'MENU/imagenes/Tocino.PNG', description: 'Porción extra de tocino.' },
+          { id: 'aros-cebolla', name: '2 Aros de cebolla', price: 15, image: 'MENU/imagenes/Aros.PNG', description: 'Aros de cebolla extra.' },
+          { id: 'chiles-vinagre', name: 'Chiles en Vinagre', price: 5, image: 'MENU/imagenes/Chiles.PNG', description: 'Complemento extra.' },
+          { id: 'boneless-extra', name: '4 Boneles extra', price: 20, image: 'MENU/imagenes/Bonelles.PNG', description: 'Boneless extra para tu pedido.' }
+        ]
+      },
+      {
+        category: 'Postres',
+        items: [
+          {
+            id: 'crepa-fresita',
+            name: 'Crepa Fresita',
+            price: 60,
+            image: 'MENU/imagenes/CrepaFresita.PNG',
+            description: 'Crepa rellena de 2 ingredientes: fresa y mermelada de fresa.'
+          },
+          {
+            id: 'crepa-chocofresa',
+            name: 'Crepa Chocofresa',
+            price: 60,
+            image: 'MENU/imagenes/CrepaChocofresa.PNG',
+            description: 'Crepa rellena de 2 ingredientes: fresa y Nutella.'
+          },
+          {
+            id: 'crepa-chocoplatano',
+            name: 'Crepa Chocoplatano',
+            price: 60,
+            image: 'MENU/imagenes/Chocoplatano.PNG',
+            description: 'Crepa rellena de 2 ingredientes: plátano y Nutella.'
+          },
+          {
+            id: 'crepa-frutal',
+            name: 'Crepa Frutal',
+            price: 60,
+            image: 'MENU/imagenes/Crepafrutal.PNG',
+            description: 'Crepa rellena de 3 ingredientes: fresa, plátano y Nutella.'
+          }
+        ]
+      },
+      {
+        category: 'Ingredientes extra postres',
+        items: [
+          { id: 'nutella', name: 'Nutella', price: 10, image: 'MENU/imagenes/Nutella.PNG', description: 'Ingrediente extra.' },
+          { id: 'fresa', name: 'Fresa', price: 10, image: 'MENU/imagenes/Fresa.PNG', description: 'Ingrediente extra.' },
+          { id: 'platano', name: 'Platano', price: 10, image: 'MENU/imagenes/Platano.PNG', description: 'Ingrediente extra.' },
+          { id: 'hershey-liquido', name: 'Hershey Liquido', price: 10, image: 'MENU/imagenes/Hershey.PNG', description: 'Ingrediente extra.' },
+          { id: 'mermelada-fresa', name: 'Mermelada de Fresa', price: 10, image: 'MENU/imagenes/Mermelada.PNG', description: 'Ingrediente extra.' }
+        ]
+      }
+    ];
+
+    const shippingZones = [
+      { id: 'las-aguilas', name: 'Las Aguilas', price: 20, image: 'MENU/imagenes/Reparidor.PNG' },
+      { id: 'ejidos-apilsa', name: 'Ejidos (Apilsa)', price: 25, image: 'MENU/imagenes/Reparidor.PNG' },
+      { id: 'margaritas', name: 'Margaritas', price: 25, image: 'MENU/imagenes/Reparidor.PNG' },
+      { id: 'colinas-del-sol', name: 'Colinas Del Sol', price: 25, image: 'MENU/imagenes/Reparidor.PNG' },
+      { id: 'rincon-inf-reforma', name: 'Rincon Inf Reforma', price: 25, image: 'MENU/imagenes/Reparidor.PNG' },
+      { id: 'tamaulipas', name: 'Tamaulipas', price: 30, image: 'MENU/imagenes/Reparidor.PNG' },
+      { id: 'coahuila', name: 'Coahuila', price: 30, image: 'MENU/imagenes/Reparidor.PNG' },
+      { id: 'evolucion', name: 'Evolución', price: 30, image: 'MENU/imagenes/Reparidor.PNG' },
+      { id: 'skf-smurfa', name: 'SKF/SMURFA', price: 30, image: 'MENU/imagenes/Reparidor.PNG' }
+    ];
+
+    const cart = {};
+
+    const menuSection = document.getElementById('menuSection');
+    const shippingOptions = document.getElementById('shippingOptions');
+    const cartBadge = document.getElementById('cartBadge');
+    const cartItems = document.getElementById('cartItems');
+    const subtotalText = document.getElementById('subtotalText');
+    const shippingText = document.getElementById('shippingText');
+    const totalText = document.getElementById('totalText');
+    const cartSheet = document.getElementById('cartSheet');
+    const openCartTop = document.getElementById('openCartTop');
+    const openCartBottom = document.getElementById('openCartBottom');
+    const closeCart = document.getElementById('closeCart');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+
+    function money(value){
+      return `$${value}`;
+    }
+
+    function renderMenu(){
+      menuSection.innerHTML = menuData.map(section => `
+        <div class="section">
+          <h2 class="section-title">${section.category}</h2>
+          <div class="cards">
+            ${section.items.map(item => {
+              const qty = cart[item.id]?.quantity || 0;
+              return `
+                <article class="card">
+                  <div class="card-media">
+                    <img src="${item.image}" alt="${item.name}" loading="lazy" />
+                  </div>
+                  <div class="card-body">
+                    <div class="card-title-row">
+                      <h3>${item.name}</h3>
+                      <div class="price">${money(item.price)}</div>
                     </div>
-                    <div class="item-price">$${item.price.toFixed(2)}</div>
-                `;
-                menu.appendChild(menuItem);
-            });
-        }
-        
-        // Incrementar cantidad de un item
-        function incrementItem(name, price) {
-            const qtyElement = document.getElementById(`qty-${name.replace(/\s+/g, '-')}`);
-            let quantity = parseInt(qtyElement.textContent) || 0;
-            quantity++;
-            qtyElement.textContent = quantity;
-            
-            addToOrder(name, price, quantity);
-        }
-        
-        // Decrementar cantidad de un item
-        function decrementItem(name, price) {
-            const qtyElement = document.getElementById(`qty-${name.replace(/\s+/g, '-')}`);
-            let quantity = parseInt(qtyElement.textContent) || 0;
-            
-            if (quantity > 0) {
-                quantity--;
-                qtyElement.textContent = quantity;
-                
-                addToOrder(name, price, quantity);
-            }
-        }
-        
-        // Añadir/actualizar item en el pedido
-        function addToOrder(name, price, quantity) {
-            // Buscar si el item ya está en el pedido
-            const existingItemIndex = orderItems.findIndex(item => item.name === name);
-            
-            if (quantity > 0) {
-                if (existingItemIndex !== -1) {
-                    // Actualizar cantidad
-                    orderItems[existingItemIndex].quantity = quantity;
-                    orderItems[existingItemIndex].total = quantity * price;
-                } else {
-                    // Añadir nuevo item
-                    orderItems.push({
-                        name: name,
-                        price: price,
-                        quantity: quantity,
-                        total: quantity * price
-                    });
-                }
-            } else if (existingItemIndex !== -1) {
-                // Eliminar item si la cantidad es 0
-                orderItems.splice(existingItemIndex, 1);
-            }
-            
-            updateReceipt();
-        }
-        
-        // Actualizar el baucher
-        function updateReceipt() {
-            const receiptItems = document.getElementById('receipt-items');
-            const receiptTotal = document.getElementById('receipt-total');
-            
-            // Limpiar items actuales
-            receiptItems.innerHTML = '';
-            
-            // Calcular total
-            let total = 0;
-            
-            // Añadir items al baucher
-            if (orderItems.length === 0) {
-                receiptItems.innerHTML = '<div class="receipt-item empty">No hay items en el pedido</div>';
-            } else {
-                orderItems.forEach(item => {
-                    const itemElement = document.createElement('div');
-                    itemElement.className = 'receipt-item';
-                    itemElement.innerHTML = `
-                        <span>${item.name} x${item.quantity}</span>
-                        <span>$${item.total.toFixed(2)}</span>
-                    `;
-                    receiptItems.appendChild(itemElement);
-                    total += item.total;
-                });
-            }
-            
-            // Actualizar total
-            receiptTotal.textContent = total.toFixed(2);
-            
-            // Actualizar datos del cliente
-            updateCustomerInfo();
-        }
-        
-        // Actualizar información del cliente en el baucher
-        function updateCustomerInfo() {
-            const name = document.getElementById('customer-name').value;
-            const line1 = document.getElementById('address-line1').value;
-            const number = document.getElementById('address-number').value;
-            const line2 = document.getElementById('address-line2').value;
-            const phone = document.getElementById('customer-phone').value;
-            const extra = document.getElementById('customer-notes').value;
-            
-            document.getElementById('customer-address').textContent = 
-                `${line1 || '-'} ${number || ''} ${line2 || ''}`.trim();
-            document.getElementById('customer-name-phone').textContent = 
-                `${name || '-'} ${phone || ''}`.trim();
-            document.getElementById('customer-extra').textContent = extra || '-';
-        }
-        
-        // Actualizar reloj
-        function updateClock() {
-            const now = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const dateStr = now.toLocaleDateString('es-MX', options);
-            const timeStr = now.toLocaleTimeString('es-MX');
-            
-            document.getElementById('clock').textContent = `${dateStr} - ${timeStr}`;
-            document.getElementById('receipt-date').textContent = 
-                `${now.toLocaleDateString('es-MX', { weekday: 'short' })} ${now.getDate()} ${now.getFullYear()} - ${timeStr}`;
-                
-            // Verificar si es un nuevo día para reiniciar el folio
-            checkDailyReset();
-        }
-        
-        // Verificar reinicio diario del folio
-        function checkDailyReset() {
-            const now = new Date();
-            const currentHour = now.getHours();
-            
-            if (currentHour === 0 && !dailyResetDone) {
-                // Es medianoche, reiniciar folio
-                folioNumber = 1;
-                dailyResetDone = true;
-                updateFolio();
-            } else if (currentHour !== 0) {
-                dailyResetDone = false;
-            }
-        }
-        
-        // Actualizar número de folio
-        function updateFolio() {
-            document.getElementById('receipt-folio').textContent = `N°${folioNumber.toString().padStart(6, '0')}`;
-        }
-        
-        // Procesar pago
-        function processPayment() {
-            const paymentAmount = parseFloat(document.getElementById('payment-amount').value) || 0;
-            const totalAmount = parseFloat(document.getElementById('receipt-total').textContent) || 0;
-            
-            if (paymentAmount >= totalAmount) {
-                const change = paymentAmount - totalAmount;
-                document.getElementById('receipt-change').textContent = change.toFixed(2);
-            } else {
-                alert('El monto recibido es menor al total del pedido');
-            }
-        }
-        
-        // Añadir dígito al monto de pago
-        function addToPayment(digit) {
-            const paymentInput = document.getElementById('payment-amount');
-            const currentValue = paymentInput.value;
-            
-            if (digit === '.') {
-                if (!currentValue.includes('.')) {
-                    paymentInput.value = currentValue === '' ? '0.' : currentValue + '.';
-                }
-            } else {
-                paymentInput.value = currentValue === '0' ? digit.toString() : currentValue + digit;
-            }
-        }
-        
-        // Limpiar monto de pago
-        function clearPayment() {
-            document.getElementById('payment-amount').value = '';
-        }
-        
-        // Imprimir baucher
-        function printReceipt(copies = 1) {
-            if (orderItems.length === 0) {
-                alert('No hay items en el pedido para imprimir');
-                return;
-            }
-            
-            // Incrementar folio después de imprimir
-            folioNumber++;
-            updateFolio();
-            
-            // Aquí iría el código para imprimir realmente
-			
-            // Esta es una simulación
-            alert(`Imprimiendo ${copies} copia(s) del baucher`);
-            
-            // Opcional: limpiar el pedido después de imprimir
-            // clearOrder();
-        }
-        
-        // Guardar baucher
-        function saveReceipt() {
-            if (orderItems.length === 0) {
-                alert('No hay items en el pedido para guardar');
-                return;
-            }
-            
-            // Aquí iría el código para guardar el baucher
-            alert('Baucher guardado');
-        }
-        
-        // Limpiar pedido
-        function clearOrder() {
-            orderItems = [];
-            
-            // Resetear cantidades en los botones
-            document.querySelectorAll('.quantity-display').forEach(el => {
-                el.textContent = '0';
-            });
-            
-            // Resetear pago
-            clearPayment();
-            document.getElementById('receipt-change').textContent = '0.00';
-            
-            updateReceipt();
-        }
-		
-
-// Imprimir baucher (solo vista previa de 80mm)
-function printThermalReceipt() {
-    const receipt = document.getElementById("receipt").cloneNode(true);
-    const printWindow = window.open('', '', 'width=400,height=600');
-    printWindow.document.write(`
-        <html>
-        <head>
-            <title>Imprimir Baucher</title>
-<style>
-    body { font-family: 'Courier New', monospace; margin: 0; padding: 0; }
-    .receipt {
-        width: 80mm;
-        padding: 10px;
-        font-size: 14px;
-        line-height: 1.4;
-        font-weight: bold; /* <-- ESTA LÍNEA NUEVA */
+                    <p class="desc">${item.description}</p>
+                    <div class="actions">
+                      <div class="qty">
+                        <button type="button" onclick="changeQty('${item.id}', -1)">−</button>
+                        <span id="qty-${item.id}">${qty}</span>
+                        <button type="button" onclick="changeQty('${item.id}', 1)">+</button>
+                      </div>
+                      <button class="add-btn" type="button" onclick="changeQty('${item.id}', 1)">Agregar</button>
+                    </div>
+                  </div>
+                </article>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `).join('');
     }
-    .receipt-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; }
-    .receipt-separator { border-top: 1px dashed #000; margin: 10px 0; }
-    .receipt-item, .receipt-total, .receipt-change {
-        display: flex;
-        justify-content: space-between;
+
+    function renderShipping(){
+      shippingOptions.innerHTML = shippingZones.map(zone => `
+        <label class="ship-option">
+          <img src="${zone.image}" alt="${zone.name}" loading="lazy" />
+          <div class="ship-option-main">
+            <div class="ship-option-name">${zone.name}</div>
+            <div class="ship-option-price">${money(zone.price)}</div>
+          </div>
+          <input type="radio" name="shippingZone" value="${zone.id}" />
+        </label>
+      `).join('');
     }
-    .receipt-customer-title, .receipt-title {
-        font-weight: bold;
+
+    function findItemById(id){
+      for(const section of menuData){
+        const found = section.items.find(item => item.id === id);
+        if(found) return found;
+      }
+      return null;
     }
-    .receipt-qr img, .receipt-flag img {
-        display: block;
-        margin: 0 auto;
-        max-width: 100px;
+
+    window.changeQty = function(id, delta){
+      const item = findItemById(id);
+      if(!item) return;
+      const current = cart[id]?.quantity || 0;
+      const next = Math.max(0, current + delta);
+      if(next === 0){
+        delete cart[id];
+      } else {
+        cart[id] = { ...item, quantity: next };
+      }
+      const qtyEl = document.getElementById(`qty-${id}`);
+      if(qtyEl) qtyEl.textContent = next;
+      updateCartUI();
     }
-</style>
-        </head>
-        <body>
-            <div class="receipt">${receipt.innerHTML}</div>
-            <script>
-                window.onload = function() {
-                    window.print();
-                    window.onafterprint = function() { window.close(); };
-                }
-            <\/script>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
-}
 
-// Guardar baucher como PDF (Mes-Día-Folio.pdf)
-function saveAsPDF() {
-    const receiptElement = document.getElementById("receipt");
-    const now = new Date();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
-    const folio = document.getElementById("receipt-folio").textContent.replace(/\D/g, '');
-    const fileName = `${month}-${day}-N°${folio}.pdf`;
+    function getSelectedShipping(){
+      const selected = document.querySelector('input[name="shippingZone"]:checked');
+      if(!selected) return null;
+      return shippingZones.find(zone => zone.id === selected.value) || null;
+    }
 
-    const opt = {
-        margin:       0,
-        filename:     fileName,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'mm', format: [80, 297], orientation: 'portrait' }
-    };
+    function getCartEntries(){
+      return Object.values(cart).filter(item => item.quantity > 0);
+    }
 
-    html2pdf().set(opt).from(receiptElement).save();
-}
-// NUEVO CLIENTE: Limpia todo y aumenta el folio
-function newCustomer() {
-    // Aumentar folio
-    folioNumber++;
-    updateFolio();
+    function updateCartUI(){
+      const entries = getCartEntries();
+      const itemsCount = entries.reduce((acc, item) => acc + item.quantity, 0);
+      const subtotal = entries.reduce((acc, item) => acc + item.quantity * item.price, 0);
+      const shipping = getSelectedShipping()?.price || 0;
+      const total = subtotal + shipping;
 
-    // Vaciar productos
-    orderItems = [];
+      cartBadge.textContent = itemsCount;
+      openCartBottom.textContent = itemsCount > 0
+        ? `Ver carrito · ${itemsCount} producto(s) · ${money(total)}`
+        : 'Ver carrito y total';
 
-    // Resetear cantidades visuales
-    document.querySelectorAll('.quantity-display').forEach(el => el.textContent = '0');
+      subtotalText.textContent = money(subtotal);
+      shippingText.textContent = money(shipping);
+      totalText.textContent = money(total);
 
-    // Limpiar total y cambio
-    document.getElementById('receipt-total').textContent = '0.00';
-    document.getElementById('receipt-change').textContent = '0.00';
+      if(entries.length === 0){
+        cartItems.innerHTML = `<div class="empty">Tu carrito está vacío.<br>Agrega productos del menú para comenzar.</div>`;
+        return;
+      }
 
-    // Limpiar campos de cliente
-    document.getElementById('customer-name').value = '';
-    document.getElementById('address-line1').value = '';
-    document.getElementById('address-number').value = '';
-    document.getElementById('address-line2').value = '';
-    document.getElementById('customer-phone').value = '';
-    document.getElementById('customer-notes').value = '';
+      cartItems.innerHTML = entries.map(item => `
+        <div class="cart-item">
+          <div>
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-meta">Cantidad: ${item.quantity}<br>Precio unitario: ${money(item.price)}</div>
+          </div>
+          <div class="cart-item-right">
+            <div class="cart-item-price">${money(item.quantity * item.price)}</div>
+            <button class="mini-remove" type="button" onclick="removeItem('${item.id}')">Quitar</button>
+          </div>
+        </div>
+      `).join('');
+    }
 
-    // Limpiar recibo visual
-    updateReceipt();
-}
-    </script>
-	
+    window.removeItem = function(id){
+      delete cart[id];
+      const qtyEl = document.getElementById(`qty-${id}`);
+      if(qtyEl) qtyEl.textContent = '0';
+      updateCartUI();
+    }
+
+    function openCart(){
+      cartSheet.classList.add('open');
+      cartSheet.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeCartPanel(){
+      cartSheet.classList.remove('open');
+      cartSheet.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    openCartTop.addEventListener('click', openCart);
+    openCartBottom.addEventListener('click', openCart);
+    closeCart.addEventListener('click', closeCartPanel);
+    cartSheet.addEventListener('click', (e) => {
+      if(e.target === cartSheet) closeCartPanel();
+    });
+
+    document.addEventListener('change', (e) => {
+      if(e.target && e.target.name === 'shippingZone'){
+        updateCartUI();
+      }
+    });
+
+    checkoutBtn.addEventListener('click', () => {
+      const entries = getCartEntries();
+      const customerName = document.getElementById('customerName').value.trim();
+      const customerAddress = document.getElementById('customerAddress').value.trim();
+      const customerNeighborhood = document.getElementById('customerNeighborhood').value.trim();
+      const shipping = getSelectedShipping();
+
+      if(entries.length === 0){
+        alert('Agrega al menos un producto antes de continuar.');
+        return;
+      }
+      if(!customerName){
+        alert('Por favor escribe el nombre del cliente.');
+        return;
+      }
+      if(!customerAddress){
+        alert('Por favor escribe la dirección de envío.');
+        return;
+      }
+      if(!customerNeighborhood){
+        alert('Por favor escribe la colonia.');
+        return;
+      }
+      if(!shipping){
+        alert('Selecciona una zona de envío.');
+        return;
+      }
+
+      const subtotal = entries.reduce((acc, item) => acc + item.quantity * item.price, 0);
+      const total = subtotal + shipping.price;
+
+      const detailLines = entries.map(item =>
+        `• ${item.name} x${item.quantity} = ${money(item.quantity * item.price)}`
+      ).join('\n');
+
+      const message =
+`Hola, quiero realizar el siguiente pedido en La pasadita:
+
+*Cliente:* ${customerName}
+*Dirección:* ${customerAddress}
+*Colonia:* ${customerNeighborhood}
+*Zona de envío:* ${shipping.name} (${money(shipping.price)})
+
+*Detalle del pedido:*
+${detailLines}
+
+*Subtotal:* ${money(subtotal)}
+*Envío:* ${money(shipping.price)}
+*Total:* ${money(total)}
+
+Enviado desde la página de pedidos.`;
+
+      const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+    });
+
+    renderMenu();
+    renderShipping();
+    updateCartUI();
+  </script>
 </body>
 </html>
