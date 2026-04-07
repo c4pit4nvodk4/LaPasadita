@@ -609,11 +609,6 @@
           </div>
 
           <div class="field">
-            <label for="customerNeighborhood">Colonia</label>
-            <input id="customerNeighborhood" type="text" placeholder="Escribe tu colonia" />
-          </div>
-
-          <div class="field">
             <label>Zonas de envío</label>
             <div class="shipping-list" id="shippingOptions"></div>
           </div>
@@ -1005,10 +1000,6 @@
       }
       if(!customerAddress){
         alert('Por favor escribe la dirección de envío.');
-        return;
-      }
-      if(!customerNeighborhood){
-        alert('Por favor escribe la colonia.');
         return;
       }
       if(!shipping){
